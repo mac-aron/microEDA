@@ -1,5 +1,5 @@
 import { Box, Grid2 as Grid } from "@mui/material";
-import EditorCanvas from "../components/editor/EditorCanvas";
+import EditorCanvas from "../components/editor-2d/EditorCanvas";
 
 function Editor() {
   return (
