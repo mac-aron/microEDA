@@ -1,13 +1,16 @@
+import {Camera} from "./Camera";
+import {Interaction} from "./Interaction";
+
 export class CanvasRenderer {
   // Canvas and its rendering context
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
 
-  // Camera position and zoom level
-  private camera = {x: 0, y: 0, scale: 1};
-  private cursor = {x: 0, y: 0, left: false, right: false};
+  private camera: Camera;
+  private interaction: Interaction;
 
-  private mm = a => 5*a; // millimeter unit
+  // Conversion from pixels to millimeters
+  private mm = a => 5*a;
 
   // Color palette used for drawing elements
   private palette = {
@@ -26,13 +29,8 @@ export class CanvasRenderer {
     this.canvas = canvas;
     this.ctx = ctx;
 
-    // Setup interaction event listeners
-    this.canvas.addEventListener("mousemove", this.handleMouseMove);
-    this.canvas.addEventListener("mousedown", this.handleMouseDown);
-    this.canvas.addEventListener("mouseup", this.handleMouseUp);
-    this.canvas.addEventListener("mouseleave", this.handleMouseLeave);
-    this.canvas.addEventListener("wheel", this.handleMouseWheel);
-    this.canvas.addEventListener("contextmenu", this.handleRightClick);
+    this.camera = new Camera(canvas, ctx);
+    this.interaction = new Interaction(canvas, ctx, this.camera);
 
     console.log(this)
   }
@@ -41,16 +39,12 @@ export class CanvasRenderer {
    * Draws an entire frame, clearing the canvas first.
    */
   public drawFrame() {
-    this.clearCanvas();
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
     this.drawGrid();
     this.drawBox();
     this.debugCursor();
     this.drawText();
-  }
-
-  private clearCanvas() {
-    this.ctx.fillStyle = this.palette.background;
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
   private drawGrid() {
@@ -60,6 +54,7 @@ export class CanvasRenderer {
     const gridSize = this.mm(10) * this.camera.scale;
 
     this.ctx.beginPath();
+
     const startPos = {x: -gridSize, y: -gridSize};
     const endPos = {x: this.canvas.width, y: this.canvas.height};
 
@@ -85,105 +80,21 @@ export class CanvasRenderer {
   }
 
   private drawBox() {
-    this.applyCamera();
+    this.camera.applyTransform();
     this.ctx.fillStyle = "#000";
     this.ctx.fillRect(0, 0, 100, 100);
     this.ctx.fillRect(200, 200, 100, 100);
-    this.clearCamera();
+    this.camera.clearTransform();
   }
 
   private debugCursor() {
     this.ctx.fillStyle = "#ff0000";
-    this.ctx.fillRect(this.cursor.x, this.cursor.y, 100, 100);
+    this.ctx.fillRect(this.interaction.cursor.x, this.interaction.cursor.y, 100, 100);
 
-    this.applyCamera();
-    const pos = this.toWorld(this.cursor.x, this.cursor.y);
+    this.camera.applyTransform();
+    const pos = this.camera.toWorld(this.interaction.cursor.x, this.interaction.cursor.y);
     this.ctx.fillStyle = "#0000ff";
     this.ctx.fillRect(pos.x, pos.y, 100, 100);
-    this.clearCamera();
-  }
-
-  private applyCamera() {
-    this.ctx.setTransform(this.camera.scale, 0, 0, this.camera.scale, this.camera.x, this.camera.y);
-  }
-
-  private clearCamera() {
-    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-  }
-
-  private scaleAt(x, y, scaleBy) {
-    if (scaleBy < 1 && this.camera.scale < 0.02) {
-      return;
-    }
-    this.camera.scale *= scaleBy;
-    this.camera.x = x - (x - this.camera.x) * scaleBy;
-    this.camera.y = y - (y - this.camera.y) * scaleBy;
-  }
-
-  private handleMouseDown = (event: MouseEvent) => {
-    // Determine which button was pressed
-    if (event.button === 0) { // Left button
-      this.cursor.left = true;
-    } else if (event.button === 2) { // Right button
-      this.cursor.right = true;
-    }
-  }
-
-  private handleMouseUp = (event: MouseEvent) => {
-    // Determine which button was released
-    if (event.button === 0) { // Left button
-      this.cursor.left = false;
-    } else if (event.button === 2) { // Right button
-      this.cursor.right = false;
-    }
-  }
-
-  private handleMouseMove = (event: MouseEvent) => {
-    // Get position relative to canvas
-    const rect = this.canvas.getBoundingClientRect();
-    this.cursor.x = event.clientX - rect.left;
-    this.cursor.y = event.clientY - rect.top;
-
-    //Dragging the scene
-    if (this.cursor.right) {
-      this.camera.x += event.movementX ;
-      this.camera.y += event.movementY;
-    }
-  }
-
-  private handleMouseWheel = (event: WheelEvent) => {
-    // Prevent default scrolling behavior
-    event.preventDefault();
-    
-    // Adjust zoom level based on wheel delta
-    const zoomFactor = 1.1;
-
-    if (event.deltaY < 0) {
-      this.scaleAt(this.cursor.x, this.cursor.y, zoomFactor);
-    } else {
-      this.scaleAt(this.cursor.x, this.cursor.y, 1 / zoomFactor);
-    }
-  }
-
-  private handleMouseLeave = (event: MouseEvent) => {
-    this.cursor.left = false;
-    this.cursor.right = false;
-  }
-
-  private handleRightClick = (event: MouseEvent) => {
-    event.preventDefault();
-  }
-
-  // https://stackoverflow.com/a/68247894
-  private toWorld(x, y) {  // convert to world coordinates
-      x = (x - this.camera.x) / this.camera.scale;
-      y = (y - this.camera.y) / this.camera.scale;
-      return {x, y};
-  }
-
-  private toScreen(x, y) {
-      x = x * this.camera.scale + this.camera.x;
-      y = y * this.camera.scale + this.camera.y;
-      return {x, y};
+    this.camera.clearTransform();
   }
 }
