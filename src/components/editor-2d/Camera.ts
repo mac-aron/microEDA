@@ -24,7 +24,7 @@ export class Camera {
       return {x, y};
   }
 
-  public scaleAt(x: number, y: number, scaleBy: number) {
+  public zoomAt(x: number, y: number, scaleBy: number) {
     if (scaleBy < 1 && this.scale < 0.02) {
       return;
     }
