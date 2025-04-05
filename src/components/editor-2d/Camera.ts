@@ -13,15 +13,15 @@ export class Camera {
 
   // https://stackoverflow.com/a/68247894
   public toWorld(x: number, y: number) {  // convert to world coordinates
-      x = (x - this.x) / this.scale;
-      y = (y - this.y) / this.scale;
-      return {x, y};
+    x = (x - this.x) / this.scale;
+    y = (y - this.y) / this.scale;
+    return { x, y };
   }
 
   public toScreen(x: number, y: number) {
-      x = x * this.scale + this.x;
-      y = y * this.scale + this.y;
-      return {x, y};
+    x = x * this.scale + this.x;
+    y = y * this.scale + this.y;
+    return { x, y };
   }
 
   public zoomAt(x: number, y: number, scaleBy: number) {

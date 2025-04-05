@@ -1,5 +1,5 @@
-import {Camera} from "./Camera";
-import {Interaction} from "./Interaction";
+import { Camera } from "./Camera";
+import { Interaction } from "./Interaction";
 
 export class CanvasRenderer {
   // Canvas and its rendering context
@@ -10,7 +10,7 @@ export class CanvasRenderer {
   private interaction: Interaction;
 
   // Conversion from pixels to millimeters
-  private mm = a => 5*a;
+  private mm = a => 5 * a;
 
   // Color palette used for drawing elements
   private palette = {
@@ -55,8 +55,8 @@ export class CanvasRenderer {
 
     this.ctx.beginPath();
 
-    const startPos = {x: -gridSize, y: -gridSize};
-    const endPos = {x: this.canvas.width, y: this.canvas.height};
+    const startPos = { x: -gridSize, y: -gridSize };
+    const endPos = { x: this.canvas.width, y: this.canvas.height };
 
     startPos.x += this.camera.x % gridSize;
     startPos.y += this.camera.y % gridSize;
@@ -67,7 +67,7 @@ export class CanvasRenderer {
     }
     for (let y = startPos.y; y < endPos.y; y += gridSize) {
       this.ctx.moveTo(startPos.x, y);
-      this.ctx.lineTo(endPos.x,   y);
+      this.ctx.lineTo(endPos.x, y);
     }
     this.ctx.stroke();
   }

@@ -1,11 +1,19 @@
 import { Camera } from './Camera';
 
+//Enum for modes
+enum InteractionMode {
+  NONE,
+  PAN,
+  SELECT
+};
+
 export class Interaction {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
   private camera: Camera;
 
-  public cursor = {x: 0, y: 0, left: false, right: false};
+  public cursor = { x: 0, y: 0, left: false, right: false };
+  public mode: InteractionMode = InteractionMode.NONE;
 
   constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, camera: Camera) {
     this.canvas = canvas;
@@ -63,7 +71,7 @@ export class Interaction {
 
     //Dragging the scene
     if (this.cursor.right) {
-      this.camera.x += event.movementX ;
+      this.camera.x += event.movementX;
       this.camera.y += event.movementY;
     }
   }
@@ -71,7 +79,7 @@ export class Interaction {
   private handleWheel = (event: WheelEvent) => {
     // Prevent default scrolling behavior
     event.preventDefault();
-    
+
     // Adjust zoom level based on wheel delta
     const zoomFactor = 1.1;
 
