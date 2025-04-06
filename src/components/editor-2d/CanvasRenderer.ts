@@ -3,10 +3,6 @@ import { Interaction } from "./Interaction";
 import { Vec2 } from "./Vec2";
 
 export class CanvasRenderer {
-  // Canvas and its rendering context
-  private canvas: HTMLCanvasElement;
-  private ctx: CanvasRenderingContext2D;
-
   private camera: Camera;
   private interaction: Interaction;
 
@@ -26,10 +22,7 @@ export class CanvasRenderer {
    * @param {HTMLCanvasElement} canvas - The canvas element to draw on.
    * @param {CanvasRenderingContext2D} ctx - The 2D context for rendering.
    */
-  constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
-    this.canvas = canvas;
-    this.ctx = ctx;
-
+  constructor(private canvas: HTMLCanvasElement, private ctx: CanvasRenderingContext2D) {
     this.camera = new Camera(canvas, ctx);
     this.interaction = new Interaction(canvas, this.camera);
 
@@ -65,7 +58,7 @@ export class CanvasRenderer {
     let start = new Vec2(-gridSize);
     let end = new Vec2(this.canvas.width, this.canvas.height);
 
-    start.add(Vec2.mod(this.camera.pos, gridSize));
+    start = start.add(this.camera.pos.mod(gridSize));
 
     for (let x = start.x; x < end.x; x += gridSize) {
       this.ctx.moveTo(x, start.y);
@@ -83,6 +76,13 @@ export class CanvasRenderer {
     this.ctx.textAlign = "left";
     this.ctx.textBaseline = "top";
     this.ctx.fillText("Hi", 10, 10);
+
+    this.camera.applyTransform();
+    this.ctx.fillStyle = this.palette.gridLine;
+    this.ctx.textAlign = "left";
+    this.ctx.textBaseline = "top";
+    this.ctx.fillText("Hi Again", 10, 10);
+    this.camera.clearTransform();
   }
 
   private drawBox() {
@@ -95,7 +95,7 @@ export class CanvasRenderer {
 
   private debugCursor() {
     this.ctx.fillStyle = "#ff0000";
-    const mousePos = this.interaction.getCursorPos();
+    const mousePos = this.interaction.cursor;
     this.ctx.fillRect(mousePos.x, mousePos.y, 100, 100);
 
     this.camera.applyTransform();

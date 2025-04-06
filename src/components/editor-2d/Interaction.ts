@@ -9,31 +9,25 @@ enum InteractionMode {
 };
 
 export class Interaction {
-  private canvas: HTMLCanvasElement;
-  private camera: Camera;
-
-  //Cursor/button info
-  private cursor = new Vec2();
+  //Cursor/button info - avoid using outside of this class
+  public cursor = new Vec2();
   private presses = { left: false, right: false };
 
   public mode: InteractionMode = InteractionMode.NONE;
 
-  constructor(canvas: HTMLCanvasElement, camera: Camera) {
-    this.canvas = canvas;
-    this.camera = camera;
-
+  constructor(private canvas: HTMLCanvasElement, private camera: Camera) {
     // Setup interaction event listeners
-    this.canvas.addEventListener("mouseup", this.handleMouseUp);
-    this.canvas.addEventListener("mousedown", this.handleMouseDown);
-    this.canvas.addEventListener("mouseleave", this.handleMouseLeave);
+    canvas.addEventListener("mouseup", this.handleMouseUp);
+    canvas.addEventListener("mousedown", this.handleMouseDown);
+    canvas.addEventListener("mouseleave", this.handleMouseLeave);
 
-    this.canvas.addEventListener("mousemove", this.handleMouseMove);
+    canvas.addEventListener("mousemove", this.handleMouseMove);
 
-    this.canvas.addEventListener("wheel", this.handleWheel);
-    this.canvas.addEventListener("auxclick", this.handleWheelClick);
+    canvas.addEventListener("wheel", this.handleWheel);
+    canvas.addEventListener("auxclick", this.handleWheelClick);
 
     // Prevent default context menu on right-click
-    this.canvas.addEventListener("contextmenu", event => event.preventDefault());
+    canvas.addEventListener("contextmenu", event => event.preventDefault());
   }
 
 
@@ -80,7 +74,7 @@ export class Interaction {
     }
 
     if (this.mode == InteractionMode.PAN) {
-      this.camera.pos.add(event.movementX, event.movementY);
+      this.camera.pan(event.movementX, event.movementY);
     }
   }
 
@@ -104,9 +98,5 @@ export class Interaction {
       this.camera.pos = new Vec2();
       this.camera.scale = 1;
     }
-  }
-
-  public getCursorPos(): Vec2 {
-    return new Vec2(this.cursor);
   }
 }

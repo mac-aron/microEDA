@@ -7,34 +7,41 @@ export class Camera {
   public pos = new Vec2();
   public scale = 1;
 
-  private canvas: HTMLCanvasElement;
-  private ctx: CanvasRenderingContext2D;
-
-  constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
-    this.canvas = canvas;
-    this.ctx = ctx;
-  }
+  constructor(private canvas: HTMLCanvasElement, private ctx: CanvasRenderingContext2D) { }
 
   // https://stackoverflow.com/a/68247894
   public toWorld(pos: Vec2) {  // convert to world coordinates
     // Or implement as something like:
-    //   Vec2.transform(pos, this.transform.inverse());
-    return Vec2.sub(pos, this.pos).div(this.scale);
+    //   pos.transform(this.transform.inverse());
+    return pos.sub(this.pos).div(this.scale);
   }
 
   public toScreen(pos: Vec2) {  // convert to screen coordinates
     // Or implement as something like:
-    //   Vec2.transform(pos, this.transform);
-    return Vec2.scale(pos, this.scale).add(this.pos);
+    //   pos.transform(this.transform);
+    return pos.scale(this.scale).add(this.pos);
   }
 
+  //TODO: Understand reason behind sub and scale order
   public zoomAt(at: Vec2, scaleBy: number) {
     if (scaleBy < 1 && this.scale < 0.02) {
       return;
     }
     this.scale *= scaleBy;
-    const d = Vec2.sub(at, this.pos).scale(scaleBy);
-    this.pos = Vec2.sub(at, d);
+    this.pos = at.sub(at.sub(this.pos).scale(scaleBy));
+  }
+
+  public pan(delta: Vec2): void;
+  public pan(x: number, y: number): void;
+  public pan(arg1: Vec2 | number, arg2?: number) {
+    if (arg1 instanceof Vec2) {
+      this.pos = this.pos.add(arg1);
+      return;
+    }
+    if (arg2 === undefined) {
+      throw new Error("Invalid arguments");
+    }
+    this.pos = this.pos.add(new Vec2(arg1, arg2));
   }
 
   public applyTransform() {
