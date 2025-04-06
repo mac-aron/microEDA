@@ -41,6 +41,12 @@ export class CanvasRenderer {
   public drawFrame() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
+    // Scene has collection of layers
+    // > Layer implements drawable
+    // > Layer has a collection of objects
+    // Draw layer (drawable?)
+    // > Draw 
+
     this.drawGrid();
     this.drawBox();
     this.debugCursor();

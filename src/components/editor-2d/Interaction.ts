@@ -41,6 +41,9 @@ export class Interaction {
       this.cursor.left = false;
     } else if (event.button === 2) { // Right button
       this.cursor.right = false;
+      if (this.mode == InteractionMode.PAN) {
+        this.mode = InteractionMode.NONE;
+      }
     }
   }
 
@@ -56,21 +59,23 @@ export class Interaction {
   private handleMouseLeave = (event: MouseEvent) => {
     this.cursor.left = false;
     this.cursor.right = false;
+    this.mode = InteractionMode.NONE;
   }
 
   private handleMouseMove = (event: MouseEvent) => {
     // Get position relative to canvas
     const rect = this.canvas.getBoundingClientRect();
-    this.cursor.x = event.clientX - rect.left;
-    this.cursor.y = event.clientY - rect.top;
+    const dpr = window.devicePixelRatio || 1; //Factor in DPI
 
-    // Factor in DPI
-    const dpr = window.devicePixelRatio || 1;
-    this.cursor.x *= dpr;
-    this.cursor.y *= dpr;
+    this.cursor.x = (event.clientX - rect.left) * dpr;
+    this.cursor.y = (event.clientY - rect.top) * dpr;
 
     //Dragging the scene
     if (this.cursor.right) {
+      this.mode = InteractionMode.PAN;
+    }
+
+    if (this.mode == InteractionMode.PAN) {
       this.camera.x += event.movementX;
       this.camera.y += event.movementY;
     }
