@@ -1,4 +1,5 @@
 import { Camera } from './Camera';
+import { Vec2 } from './Vec2';
 
 //Enum for modes
 enum InteractionMode {
@@ -9,15 +10,16 @@ enum InteractionMode {
 
 export class Interaction {
   private canvas: HTMLCanvasElement;
-  private ctx: CanvasRenderingContext2D;
   private camera: Camera;
 
-  public cursor = { x: 0, y: 0, left: false, right: false };
+  //Cursor/button info
+  private cursor = new Vec2();
+  private presses = { left: false, right: false };
+
   public mode: InteractionMode = InteractionMode.NONE;
 
-  constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, camera: Camera) {
+  constructor(canvas: HTMLCanvasElement, camera: Camera) {
     this.canvas = canvas;
-    this.ctx = ctx;
     this.camera = camera;
 
     // Setup interaction event listeners
@@ -38,9 +40,9 @@ export class Interaction {
   private handleMouseUp = (event: MouseEvent) => {
     // Determine which button was released
     if (event.button === 0) { // Left button
-      this.cursor.left = false;
+      this.presses.left = false;
     } else if (event.button === 2) { // Right button
-      this.cursor.right = false;
+      this.presses.right = false;
       if (this.mode == InteractionMode.PAN) {
         this.mode = InteractionMode.NONE;
       }
@@ -50,15 +52,15 @@ export class Interaction {
   private handleMouseDown = (event: MouseEvent) => {
     // Determine which button was pressed
     if (event.button === 0) { // Left button
-      this.cursor.left = true;
+      this.presses.left = true;
     } else if (event.button === 2) { // Right button
-      this.cursor.right = true;
+      this.presses.right = true;
     }
   }
 
   private handleMouseLeave = (event: MouseEvent) => {
-    this.cursor.left = false;
-    this.cursor.right = false;
+    this.presses.left = false;
+    this.presses.right = false;
     this.mode = InteractionMode.NONE;
   }
 
@@ -67,17 +69,18 @@ export class Interaction {
     const rect = this.canvas.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1; //Factor in DPI
 
-    this.cursor.x = (event.clientX - rect.left) * dpr;
-    this.cursor.y = (event.clientY - rect.top) * dpr;
+    this.cursor = new Vec2(
+      (event.clientX - rect.left) * dpr,
+      (event.clientY - rect.top) * dpr
+    );
 
     //Dragging the scene
-    if (this.cursor.right) {
+    if (this.presses.right) {
       this.mode = InteractionMode.PAN;
     }
 
     if (this.mode == InteractionMode.PAN) {
-      this.camera.x += event.movementX;
-      this.camera.y += event.movementY;
+      this.camera.pos.add(event.movementX, event.movementY);
     }
   }
 
@@ -89,18 +92,21 @@ export class Interaction {
     const zoomFactor = 1.1;
 
     if (event.deltaY < 0) {
-      this.camera.zoomAt(this.cursor.x, this.cursor.y, zoomFactor);
+      this.camera.zoomAt(this.cursor, zoomFactor);
     } else {
-      this.camera.zoomAt(this.cursor.x, this.cursor.y, 1 / zoomFactor);
+      this.camera.zoomAt(this.cursor, 1 / zoomFactor);
     }
   }
 
   private handleWheelClick = (event: MouseEvent) => {
     if (event.button === 1) { // Middle button (wheel click)
       event.preventDefault();
-      this.camera.x = 0;
-      this.camera.y = 0;
+      this.camera.pos = new Vec2();
       this.camera.scale = 1;
     }
+  }
+
+  public getCursorPos(): Vec2 {
+    return new Vec2(this.cursor);
   }
 }

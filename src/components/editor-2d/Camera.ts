@@ -1,6 +1,10 @@
+import { Vec2 } from './Vec2';
+
+//Could instead have Transform class, and have camera = new Transform();
+//  but wouldn't have the names toWorld and toScreen then
+//or call it View?
 export class Camera {
-  public x = 0;
-  public y = 0;
+  public pos = new Vec2();
   public scale = 1;
 
   private canvas: HTMLCanvasElement;
@@ -12,29 +16,29 @@ export class Camera {
   }
 
   // https://stackoverflow.com/a/68247894
-  public toWorld(x: number, y: number) {  // convert to world coordinates
-    x = (x - this.x) / this.scale;
-    y = (y - this.y) / this.scale;
-    return { x, y };
+  public toWorld(pos: Vec2) {  // convert to world coordinates
+    // Or implement as something like:
+    //   Vec2.transform(pos, this.transform.inverse());
+    return Vec2.sub(pos, this.pos).div(this.scale);
   }
 
-  public toScreen(x: number, y: number) {
-    x = x * this.scale + this.x;
-    y = y * this.scale + this.y;
-    return { x, y };
+  public toScreen(pos: Vec2) {  // convert to screen coordinates
+    // Or implement as something like:
+    //   Vec2.transform(pos, this.transform);
+    return Vec2.scale(pos, this.scale).add(this.pos);
   }
 
-  public zoomAt(x: number, y: number, scaleBy: number) {
+  public zoomAt(at: Vec2, scaleBy: number) {
     if (scaleBy < 1 && this.scale < 0.02) {
       return;
     }
     this.scale *= scaleBy;
-    this.x = x - (x - this.x) * scaleBy;
-    this.y = y - (y - this.y) * scaleBy;
+    const d = Vec2.sub(at, this.pos).scale(scaleBy);
+    this.pos = Vec2.sub(at, d);
   }
 
   public applyTransform() {
-    this.ctx.setTransform(this.scale, 0, 0, this.scale, this.x, this.y);
+    this.ctx.setTransform(this.scale, 0, 0, this.scale, this.pos.x, this.pos.y);
   }
 
   public clearTransform() {

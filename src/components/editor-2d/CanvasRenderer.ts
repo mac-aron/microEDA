@@ -1,5 +1,6 @@
 import { Camera } from "./Camera";
 import { Interaction } from "./Interaction";
+import { Vec2 } from "./Vec2";
 
 export class CanvasRenderer {
   // Canvas and its rendering context
@@ -30,7 +31,7 @@ export class CanvasRenderer {
     this.ctx = ctx;
 
     this.camera = new Camera(canvas, ctx);
-    this.interaction = new Interaction(canvas, ctx, this.camera);
+    this.interaction = new Interaction(canvas, this.camera);
 
     console.log(this)
   }
@@ -61,19 +62,18 @@ export class CanvasRenderer {
 
     this.ctx.beginPath();
 
-    const startPos = { x: -gridSize, y: -gridSize };
-    const endPos = { x: this.canvas.width, y: this.canvas.height };
+    let start = new Vec2(-gridSize);
+    let end = new Vec2(this.canvas.width, this.canvas.height);
 
-    startPos.x += this.camera.x % gridSize;
-    startPos.y += this.camera.y % gridSize;
+    start.add(Vec2.mod(this.camera.pos, gridSize));
 
-    for (let x = startPos.x; x < endPos.x; x += gridSize) {
-      this.ctx.moveTo(x, startPos.y);
-      this.ctx.lineTo(x, endPos.y);
+    for (let x = start.x; x < end.x; x += gridSize) {
+      this.ctx.moveTo(x, start.y);
+      this.ctx.lineTo(x, end.y);
     }
-    for (let y = startPos.y; y < endPos.y; y += gridSize) {
-      this.ctx.moveTo(startPos.x, y);
-      this.ctx.lineTo(endPos.x, y);
+    for (let y = start.y; y < end.y; y += gridSize) {
+      this.ctx.moveTo(start.x, y);
+      this.ctx.lineTo(end.x, y);
     }
     this.ctx.stroke();
   }
@@ -95,10 +95,11 @@ export class CanvasRenderer {
 
   private debugCursor() {
     this.ctx.fillStyle = "#ff0000";
-    this.ctx.fillRect(this.interaction.cursor.x, this.interaction.cursor.y, 100, 100);
+    const mousePos = this.interaction.getCursorPos();
+    this.ctx.fillRect(mousePos.x, mousePos.y, 100, 100);
 
     this.camera.applyTransform();
-    const pos = this.camera.toWorld(this.interaction.cursor.x, this.interaction.cursor.y);
+    const pos = this.camera.toWorld(mousePos);
     this.ctx.fillStyle = "#0000ff";
     this.ctx.fillRect(pos.x, pos.y, 100, 100);
     this.camera.clearTransform();
