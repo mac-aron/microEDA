@@ -74,7 +74,10 @@ export class Interaction {
     }
 
     if (this.mode == InteractionMode.PAN) {
-      this.camera.pan(event.movementX, event.movementY);
+      this.camera.pan(
+        event.movementX * dpr,
+        event.movementY * dpr
+      );
     }
   }
 

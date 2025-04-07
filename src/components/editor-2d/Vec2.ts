@@ -114,11 +114,16 @@ export class Vec2 {
     return `(${this.x}, ${this.y})`;
   }
 
+  // To millimeters
+  public mm(): Vec2 {
+    return this.scale(5);
+  }
+
   public static fromAngle(angle: number): Vec2 {
     return new Vec2(Math.cos(angle), Math.sin(angle));
   }
 
   public static fromPolar(radius: number, angle: number): Vec2 {
-    return new Vec2(radius * Math.cos(angle), radius * Math.sin(angle));
+    return Vec2.fromAngle(angle).scale(radius);
   }
 }

@@ -1,25 +1,45 @@
 import { Vec2 } from './Vec2';
 
-//Could instead have Transform class, and have camera = new Transform();
-//  but wouldn't have the names toWorld and toScreen then
-//or call it View?
 export class Camera {
   public pos = new Vec2();
   public scale = 1;
 
   constructor(private canvas: HTMLCanvasElement, private ctx: CanvasRenderingContext2D) { }
 
-  // https://stackoverflow.com/a/68247894
-  public toWorld(pos: Vec2) {  // convert to world coordinates
+  // World space
+  // ||=============||
+  // ||x-w/2,y-h/2  ||
+  // ||  scale: mm  ||
+  // ||  x+w/2,y+h/2||
+  // ||=============||
+  public toWorld(pos: Vec2) {  // Screen to world coordinates
     // Or implement as something like:
     //   pos.transform(this.transform.inverse());
-    return pos.sub(this.pos).div(this.scale);
+    return pos.sub(this.pos)
+      .div(this.scale)
+      .sub(this.viewportHalf());
   }
 
-  public toScreen(pos: Vec2) {  // convert to screen coordinates
+  // Screen space
+  // ||============||
+  // ||0,0         ||
+  // || scale: px  ||
+  // ||         w,h||
+  // ||============||
+  public toScreen(pos: Vec2) {  // World to screen coordinates
     // Or implement as something like:
     //   pos.transform(this.transform);
-    return pos.scale(this.scale).add(this.pos);
+    return pos.add(this.viewportHalf())
+      .scale(this.scale)
+      .add(this.pos);
+  }
+
+  public viewport(): Vec2 {
+    return new Vec2(this.canvas.width, this.canvas.height);
+  }
+
+  public viewportHalf(): Vec2 {
+    return new Vec2(this.canvas.width / 2, this.canvas.height / 2);
   }
 
   //TODO: Understand reason behind sub and scale order
@@ -46,6 +66,7 @@ export class Camera {
 
   public applyTransform() {
     this.ctx.setTransform(this.scale, 0, 0, this.scale, this.pos.x, this.pos.y);
+    this.ctx.translate(this.viewportHalf().x, this.viewportHalf().y);
   }
 
   public clearTransform() {
