@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { Button, Box } from "@mui/material";
 import Canvas from "./Canvas";
+import CanvasFullscreen from "./CanvasFullscreen";
 import { CanvasRenderer } from "./CanvasRenderer";
 
 function EditorCanvas() {
@@ -17,6 +18,7 @@ function EditorCanvas() {
         {isEditMode ? "Preview Mode" : "Edit Mode"}
       </Button>
 
+      {/* <CanvasFullscreen */}
       <Canvas
         onUpdate={(canvas, ctx) => {
           if (!rendererRef.current) {

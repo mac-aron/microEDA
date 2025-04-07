@@ -42,13 +42,32 @@ export class Camera {
     return new Vec2(this.canvas.width / 2, this.canvas.height / 2);
   }
 
+  //Is world space pos in screen space viewport? For frustum culling
+  //bounds: check if the bounds rectangle is in the viewport
+  public inViewport(pos: Vec2): boolean;
+  public inViewport(pos: Vec2, bounds?: Vec2): boolean {
+    if (bounds === undefined) {
+      bounds = new Vec2(0);
+    }
+    const screenPosMin = this.toScreen(pos.add(bounds.div(2)));
+    const screenPosMax = this.toScreen(pos.sub(bounds.div(2)));
+    const viewport = this.viewport();
+    return (
+      screenPosMin.x >= 0 &&
+      screenPosMin.y >= 0 &&
+      screenPosMax.x <= viewport.x &&
+      screenPosMax.y <= viewport.y
+    );
+  }
+
   //TODO: Understand reason behind sub and scale order
   public zoomAt(at: Vec2, scaleBy: number) {
-    if (scaleBy < 1 && this.scale < 0.02) {
-      return;
-    }
+    if (scaleBy < 1 && this.scale < 0.04) return;
+    if (scaleBy > 1 && this.scale > 2000) return;
+
     this.scale *= scaleBy;
-    this.pos = at.sub(at.sub(this.pos).scale(scaleBy));
+    const delta = at.sub(this.pos).scale(scaleBy);
+    this.pos = at.sub(delta);
   }
 
   public pan(delta: Vec2): void;

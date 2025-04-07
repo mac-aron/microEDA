@@ -28,6 +28,11 @@ export class Interaction {
 
     // Prevent default context menu on right-click
     canvas.addEventListener("contextmenu", event => event.preventDefault());
+
+    // Capture pointer (continue dragging while outside of canvas)
+    canvas.onpointerdown = (event) => {
+      canvas.setPointerCapture(event.pointerId);
+    }
   }
 
 
@@ -86,7 +91,7 @@ export class Interaction {
     event.preventDefault();
 
     // Adjust zoom level based on wheel delta
-    const zoomFactor = 1.1;
+    const zoomFactor = 1 + Math.abs(event.deltaY / 200);
 
     if (event.deltaY < 0) {
       this.camera.zoomAt(this.cursor, zoomFactor);

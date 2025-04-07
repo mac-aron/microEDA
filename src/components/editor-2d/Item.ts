@@ -25,6 +25,7 @@ export class Item {
   public img: HTMLImageElement | null = null;
   // private svg: SVGImageElement;
 
+  //Bounds are for selection
   constructor(pos: Vec2, bounds: Vec2) {
     this.pos = pos;
     this.bounds = bounds;
@@ -33,16 +34,17 @@ export class Item {
   draw(ctx: CanvasRenderingContext2D) {
     if (this.img) {
       // Image
-      const imgScaled = new Vec2(this.img.width, this.img.height).mm()
-      const imgPos = imgScaled.div(2).scale(-1);
+      const imgPos = this.bounds.div(2).scale(-1);
 
       try {
-        ctx.drawImage(this.img, imgPos.x, imgPos.y, imgScaled.x, imgScaled.y);
+        ctx.drawImage(this.img, imgPos.x, imgPos.y, this.bounds.x, this.bounds.y);
       } catch (e) {
         console.error("Error drawing image:", e);
       }
     } else if (this.path) {
       // Path
+      ctx.strokeStyle = "#372";
+      ctx.lineWidth = 5;
       ctx.fill(this.path);
       ctx.stroke(this.path);
     } else {

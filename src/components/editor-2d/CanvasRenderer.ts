@@ -29,22 +29,17 @@ export class CanvasRenderer {
   constructor(private canvas: HTMLCanvasElement, private ctx: CanvasRenderingContext2D) {
     this.camera = new Camera(canvas, ctx);
     this.interaction = new Interaction(canvas, this.camera);
-
     console.log(this)
-    this.items = new ItemCollection();
-    this.items.add(new Item(new Vec2(0, 0), new Vec2(100, 100)));
 
-    const box1 = new Item(new Vec2(0, 0), new Vec2(100, 100));
-    box1.path = new Path2D();
-    box1.path.rect(0, 0, 100, 100);
-    this.items.add(box1);
+    this.items = new ItemCollection(this.camera);
+    this.items.add(new Item(new Vec2(0, 0), new Vec2(100, 100)));
 
     const box2 = new Item(new Vec2(200, 200), new Vec2(100, 100));
     box2.path = new Path2D();
-    box2.path.rect(0, 0, 100, 100);
+    box2.path.rect(-50, -50, 100, 100);
     this.items.add(box2);
 
-    const text = new Item(new Vec2(0, -110), new Vec2(0));
+    const text = new Item(new Vec2(0, -110), new Vec2(200));
     //Create custom SVG element for text
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("width", "10mm");
@@ -67,6 +62,7 @@ export class CanvasRenderer {
     img.src = "./f-cu.svg";
     img.onload = () => {
       imgItem.img = img;
+      imgItem.bounds = new Vec2(img.width, img.height).mm()
       this.items.collection.unshift(imgItem);
     }
   }
@@ -133,7 +129,7 @@ export class CanvasRenderer {
     this.camera.clearTransform();
 
     this.ctx.fillStyle = "#00ff00"; //toScreen space
-    this.ctx.fillRect(pos2.x-30, pos2.y-30, 30, 30);
+    this.ctx.fillRect(pos2.x - 30, pos2.y - 30, 30, 30);
     this.ctx.globalAlpha = 1;
   }
 }
