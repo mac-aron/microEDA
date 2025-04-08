@@ -1,5 +1,7 @@
-import { Vec2 } from './Vec2';
+import { Vec2 } from './Util/Vec2';
 
+// Manages screen space to world space coordinate conversion
+// and the camera position and scale.
 export class Camera {
   public pos = new Vec2();
   public scale = 1;
@@ -44,7 +46,6 @@ export class Camera {
 
   //Is world space pos in screen space viewport? For frustum culling
   //bounds: check if the bounds rectangle is in the viewport
-  public inViewport(pos: Vec2): boolean;
   public inViewport(pos: Vec2, bounds?: Vec2): boolean {
     if (bounds === undefined) {
       bounds = new Vec2(0);
@@ -83,12 +84,12 @@ export class Camera {
     this.pos = this.pos.add(new Vec2(arg1, arg2));
   }
 
-  public applyTransform() {
+  public enterWorldSpace() {
     this.ctx.setTransform(this.scale, 0, 0, this.scale, this.pos.x, this.pos.y);
     this.ctx.translate(this.viewportHalf().x, this.viewportHalf().y);
   }
 
-  public clearTransform() {
+  public exitWorldSpace() {
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
   }
 }

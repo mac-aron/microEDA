@@ -1,13 +1,5 @@
+// Immutable 2D vector representation of x and y coordinate pair.
 export class Vec2 {
-  /* 
-  X and Y are immutable after creation, otherwise confusing
-  situations such as passing by reference, or having
-  myVec.add(1) change the original vector could occur.
-
-  This makes it easier to reason about the code, since any
-  mutations have to be done via the = operator, e.g
-  myVec = myVec.add(1);
-  */
   public readonly x: number;
   public readonly y: number;
 
@@ -112,6 +104,30 @@ export class Vec2 {
 
   public toString(): string {
     return `(${this.x}, ${this.y})`;
+  }
+
+  public min(vec: Vec2): Vec2 {
+    return new Vec2(Math.min(this.x, vec.x), Math.min(this.y, vec.y));
+  }
+
+  public max(vec: Vec2): Vec2 {
+    return new Vec2(Math.max(this.x, vec.x), Math.max(this.y, vec.y));
+  }
+
+  public lessThan(vec: Vec2): boolean {
+    return this.x < vec.x && this.y < vec.y;
+  }
+
+  public lessThanEq(vec: Vec2): boolean {
+    return this.x <= vec.x && this.y <= vec.y;
+  }
+
+  public greaterThan(vec: Vec2): boolean {
+    return this.x > vec.x && this.y > vec.y;
+  }
+
+  public greaterThanEq(vec: Vec2): boolean {
+    return this.x >= vec.x && this.y >= vec.y;
   }
 
   // To millimeters

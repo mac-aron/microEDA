@@ -1,15 +1,16 @@
 import { Camera } from "./Camera";
 import { Interaction } from "./Interaction";
-import { Vec2 } from "./Vec2";
+import { Vec2 } from "./Util/Vec2";
 import { Item } from "./Item";
 import { ItemCollection } from "./ItemCollection";
+import { Selection } from "./Selection";
 
 export class CanvasRenderer {
   private camera: Camera;
   private interaction: Interaction;
 
   // Conversion from pixels to millimeters
-  private mm = a => 5 * a;
+  private mm = (a: number) => 5 * a;
 
   // Color palette used for drawing elements
   private palette = {
@@ -20,6 +21,7 @@ export class CanvasRenderer {
   };
 
   private items: ItemCollection;
+  private selection = new Selection();
 
   /**
    * Constructor initializes the renderer with a canvas and context.
@@ -27,11 +29,14 @@ export class CanvasRenderer {
    * @param {CanvasRenderingContext2D} ctx - The 2D context for rendering.
    */
   constructor(private canvas: HTMLCanvasElement, private ctx: CanvasRenderingContext2D) {
-    this.camera = new Camera(canvas, ctx);
-    this.interaction = new Interaction(canvas, this.camera);
+    this.camera = new Camera(this.canvas, ctx);
+    this.interaction = new Interaction(canvas, ctx, this.camera, this.selection);
     console.log(this)
 
-    this.items = new ItemCollection(this.camera);
+
+    this.items = new ItemCollection();
+    this.selection.selectableItems = this.items;
+
     this.items.add(new Item(new Vec2(0, 0), new Vec2(100, 100)));
 
     const box2 = new Item(new Vec2(200, 200), new Vec2(100, 100));
@@ -39,14 +44,14 @@ export class CanvasRenderer {
     box2.path.rect(-50, -50, 100, 100);
     this.items.add(box2);
 
-    const text = new Item(new Vec2(0, -110), new Vec2(200));
+    const text = new Item(new Vec2(0, -110), new Vec2(50, 40));
     //Create custom SVG element for text
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("width", "10mm");
-    svg.setAttribute("height", "10mm");
-    svg.setAttribute("viewBox", "-100 -100 200 200");
+    svg.setAttribute("width", text.bounds.x+'mm');
+    svg.setAttribute("height", text.bounds.y+'mm');
+    svg.setAttribute("viewBox", "-10 -10 20 20");
     svg.setAttribute("style", "font-size: 20px; fill: #000000;");
-    svg.innerHTML = "<text x='0' y='0'>Hello</text>";
+    svg.innerHTML = "<text x='-10' y='7'>Hi</text>";
     const svgData = new XMLSerializer().serializeToString(svg);
     const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
     const url = URL.createObjectURL(svgBlob);
@@ -74,15 +79,18 @@ export class CanvasRenderer {
     this.ctx.clearRect(0, 0, this.camera.viewport().x, this.camera.viewport().y);
 
     //Enter world space
-    this.camera.applyTransform();
+    this.camera.enterWorldSpace();
 
     this.drawGrid();
-    this.items.draw(this.ctx);
+    this.items.draw(this.ctx, this.camera);
 
     //Exit world space
-    this.camera.clearTransform();
+    this.camera.exitWorldSpace();
 
-    this.debugCursor();
+    // this.debugCursor();
+
+    //Draw selection related things like selection box, if needed
+    this.selection.draw(this.ctx, this.camera, this.interaction);
     this.drawText();
   }
 
@@ -121,12 +129,12 @@ export class CanvasRenderer {
     const mousePos = this.interaction.cursor;
     this.ctx.fillRect(mousePos.x, mousePos.y, 30, 30);
 
-    this.camera.applyTransform();
+    this.camera.enterWorldSpace();
     const pos = this.camera.toWorld(mousePos);
     this.ctx.fillStyle = "#0000ff"; //toWorld space
     this.ctx.fillRect(pos.x, pos.y, 30, 30);
     const pos2 = this.camera.toScreen(pos);
-    this.camera.clearTransform();
+    this.camera.exitWorldSpace();
 
     this.ctx.fillStyle = "#00ff00"; //toScreen space
     this.ctx.fillRect(pos2.x - 30, pos2.y - 30, 30, 30);

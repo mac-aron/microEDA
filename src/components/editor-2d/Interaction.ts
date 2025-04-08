@@ -1,21 +1,33 @@
 import { Camera } from './Camera';
-import { Vec2 } from './Vec2';
+import { Vec2 } from './Util/Vec2';
+import { Box2 } from './Util/Box2';
+import { Selection } from './Selection';
 
-//Enum for modes
-enum InteractionMode {
+export enum InteractionMode {
   NONE,
-  PAN,
   SELECT
 };
 
+// Manages user interaction with the canvas through
+// mouse events and button presses
 export class Interaction {
   //Cursor/button info - avoid using outside of this class
   public cursor = new Vec2();
   private presses = { left: false, right: false };
+  private pressStart = {
+    left: {
+      screen: new Vec2(),
+      world: new Vec2()
+    },
+    right: {
+      screen: new Vec2(),
+      world: new Vec2()
+    }
+  };
 
   public mode: InteractionMode = InteractionMode.NONE;
 
-  constructor(private canvas: HTMLCanvasElement, private camera: Camera) {
+  constructor(private canvas: HTMLCanvasElement, private ctx: CanvasRenderingContext2D, private camera: Camera, private selection: Selection) {
     // Setup interaction event listeners
     canvas.addEventListener("mouseup", this.handleMouseUp);
     canvas.addEventListener("mousedown", this.handleMouseDown);
@@ -40,11 +52,17 @@ export class Interaction {
     // Determine which button was released
     if (event.button === 0) { // Left button
       this.presses.left = false;
+      if (this.mode == InteractionMode.SELECT) {
+        // Select items within the selection box
+        this.selection.select();
+        // Reset mode
+        this.mode = InteractionMode.NONE;
+      } else {
+        // TODO: Add click item
+        this.selection.deselect();
+      }
     } else if (event.button === 2) { // Right button
       this.presses.right = false;
-      if (this.mode == InteractionMode.PAN) {
-        this.mode = InteractionMode.NONE;
-      }
     }
   }
 
@@ -52,12 +70,16 @@ export class Interaction {
     // Determine which button was pressed
     if (event.button === 0) { // Left button
       this.presses.left = true;
+      this.pressStart.left.screen = this.cursor;
+      this.pressStart.left.world = this.camera.toWorld(this.cursor);
     } else if (event.button === 2) { // Right button
       this.presses.right = true;
+      this.pressStart.right.screen = this.cursor;
+      this.pressStart.right.world = this.camera.toWorld(this.cursor);
     }
   }
 
-  private handleMouseLeave = (event: MouseEvent) => {
+  private handleMouseLeave = (_: MouseEvent) => {
     this.presses.left = false;
     this.presses.right = false;
     this.mode = InteractionMode.NONE;
@@ -73,12 +95,20 @@ export class Interaction {
       (event.clientY - rect.top) * dpr
     );
 
-    //Dragging the scene
-    if (this.presses.right) {
-      this.mode = InteractionMode.PAN;
+    //Selection
+    if (this.presses.left && this.cursor.distance(this.pressStart.left.screen) > 5) {
+      this.mode = InteractionMode.SELECT;
     }
 
-    if (this.mode == InteractionMode.PAN) {
+    if (this.mode == InteractionMode.SELECT) {
+      this.selection.selectionBox = new Box2(
+        this.pressStart.left.world,
+        this.camera.toWorld(this.cursor)
+      );
+    }
+
+    //Dragging the scene
+    if (this.presses.right) {
       this.camera.pan(
         event.movementX * dpr,
         event.movementY * dpr

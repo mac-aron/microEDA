@@ -1,15 +1,12 @@
-import { Vec2 } from "./Vec2";
+import { Vec2 } from "./Util/Vec2";
 
 /*
 Item is something drawable in world space, has a position.
 
 May belong to an ItemCollection inside a Group, Layer or Scene
 
-May have a bounding box (for selection and frustum culling)
+May have a bounding box for selection
 // And a keepout box (for collision)?
-
-Otherwise it's selectable by ctx.isPointInPath()
-(ensure drawing is done via path, rect instead of fillRect)
 
 The item is drawn with pos at the center
 */
@@ -57,8 +54,4 @@ export class Item {
       ctx.stroke();
     }
   }
-
-  // abstract contains(pos: Vec2): boolean;
-
-  // abstract getBoundingBox(): { pos: Vec2; size: Vec2 };
 }
