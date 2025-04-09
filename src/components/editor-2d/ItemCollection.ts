@@ -1,20 +1,14 @@
 import { Item } from "./Item";
 import { Camera } from "./Camera";
 import { Vec2 } from "./Util/Vec2";
-import { Box2 } from "./Util/Box2";
 
 // Manages a collection of items, such as drawing them together
 export class ItemCollection {
-  //Has its own position, which offsets all the items
-  public pos = new Vec2();
-
   public collection: Item[] = [];
 
   constructor() { }
 
   draw(ctx: CanvasRenderingContext2D, camera: Camera) {
-    // Draw with collection pos as origin
-    ctx.translate(this.pos.x, this.pos.y);
     for (const object of this.collection) {
       // Optimization (Frustum Culling) 
       // Skip if no part of the item is in the viewport
@@ -25,7 +19,30 @@ export class ItemCollection {
       object.draw(ctx);
       ctx.translate(-object.pos.x, -object.pos.y);
     }
-    ctx.translate(-this.pos.x, -this.pos.y);
+
+    this.drawCollisions(ctx);
+  }
+
+  private drawCollisions(ctx: CanvasRenderingContext2D) {
+    for (const pair of this.findCollisions()) {
+      const { itemA, itemB } = pair;
+
+      // Draw collision boxes
+      ctx.strokeStyle = "rgba(255, 0, 0, 0.5)";
+      ctx.fillStyle = "rgba(255, 0, 0, 0.2)";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(itemA.box.min.x, itemA.box.min.y, itemA.box.size().x, itemA.box.size().y);
+      ctx.fillRect(itemA.box.min.x, itemA.box.min.y, itemA.box.size().x, itemA.box.size().y);
+      ctx.strokeRect(itemB.box.min.x, itemB.box.min.y, itemB.box.size().x, itemB.box.size().y);
+      ctx.fillRect(itemB.box.min.x, itemB.box.min.y, itemB.box.size().x, itemB.box.size().y);
+
+      // Fill intersection
+      const intersection = itemA.box.intersection(itemB.box);
+      if (intersection) {
+        ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
+        ctx.fillRect(intersection.min.x, intersection.min.y, intersection.size().x, intersection.size().y);
+      }
+    }
   }
 
   public add(item: Item) {
@@ -43,8 +60,7 @@ export class ItemCollection {
   public itemsUnderPoint(pos: Vec2): ItemCollection {
     const itemsUnderPoint = new ItemCollection();
     for (const item of this.collection) {
-      const itemBox = Box2.fromCenterAndSize(item.pos.add(this.pos), item.bounds);
-      if (itemBox.contains(pos)) {
+      if (item.box.contains(pos)) {
         itemsUnderPoint.add(item);
       }
     }
@@ -54,6 +70,25 @@ export class ItemCollection {
   public moveItems(offset: Vec2) {
     for (const item of this.collection) {
       item.pos = item.pos.add(offset);
+    }
+  }
+
+  public *findCollisions() {
+    const collidables = new ItemCollection();
+    for (const item of this.collection) {
+      if (item.collides) {
+        collidables.add(item);
+      }
+    }
+    for (let i = 0; i < collidables.collection.length; i++) {
+      const itemA = collidables.collection[i];
+      for (let j = i + 1; j < collidables.collection.length; j++) {
+        const itemB = collidables.collection[j];
+        if (itemA.box.intersects(itemB.box)) {
+          // Handle collision between itemA and itemB
+          yield { itemA, itemB };
+        }
+      }
     }
   }
 }

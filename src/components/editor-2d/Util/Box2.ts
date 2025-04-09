@@ -74,6 +74,13 @@ export class Box2 {
     return this.min.max(point.min(this.max));
   }
 
+  public expand(amount: Vec2): Box2 {
+    return new Box2(
+      this.min.sub(amount.div(2)),
+      this.max.add(amount.div(2))
+    );
+  }
+
   public toString(): string {
     return `Box2(${this.min.toString()}, ${this.max.toString()})`;
   }

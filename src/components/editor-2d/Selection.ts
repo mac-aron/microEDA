@@ -40,10 +40,7 @@ export class Selection {
   //Find all items in selection box and add them to selectedItems
   public selectFromBox() {
     for (const item of this.selectableItems.collection) {
-      const itemPos = item.pos.add(this.selectableItems.pos);
-      const itemBox = Box2.fromCenterAndSize(itemPos, item.bounds);
-
-      if (this.selectionBox.contains(itemBox)) {
+      if (this.selectionBox.contains(item.box)) {
         this.selectedItems.add(item);
       }
     }
@@ -62,9 +59,7 @@ export class Selection {
     ctx.lineWidth = 2;
 
     for (const item of this.selectedItems.collection) {
-      const itemPos = item.pos.add(this.selectedItems.pos);
-      const itemBox = Box2.fromCenterAndSize(itemPos, item.bounds.add(new Vec2(20)));
-
+      const itemBox = item.box.expand(new Vec2(20)); // Expand the box for better visibility
       const pos = itemBox.min;
       const size = itemBox.size();
 

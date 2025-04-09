@@ -5,26 +5,19 @@ import { Item } from "./Item";
 import { ItemCollection } from "./ItemCollection";
 import { Selection } from "./Selection";
 
-export class CanvasRenderer {
+//Entry point for rendering
+export class Scene {
   private camera: Camera;
   private interaction: Interaction;
 
   // Conversion from pixels to millimeters
   private mm = (a: number) => 5 * a;
 
-  // Color palette used for drawing elements
-  private palette = {
-    background: "#ffffff",
-    grid: "#ffffff",
-    gridLine: "#cccccc",
-    gridText: "#000000",
-  };
-
   private items: ItemCollection;
   private selection = new Selection();
 
   /**
-   * Constructor initializes the renderer with a canvas and context.
+   * Constructor initializes the Scene with a canvas and context.
    * @param {HTMLCanvasElement} canvas - The canvas element to draw on.
    * @param {CanvasRenderingContext2D} ctx - The 2D context for rendering.
    */
@@ -33,16 +26,18 @@ export class CanvasRenderer {
     this.interaction = new Interaction(canvas, this.camera, this.selection);
     console.log(this)
 
-
     this.items = new ItemCollection();
     this.selection.selectableItems = this.items;
 
-    this.items.add(new Item(new Vec2(0, 0), new Vec2(100, 100)));
+    const circle = new Item(new Vec2(0, 0), new Vec2(100, 100));
+    circle.collides = true;
+    this.items.add(circle);
 
-    const box2 = new Item(new Vec2(200, 200), new Vec2(100, 100));
-    box2.path = new Path2D();
-    box2.path.rect(-50, -50, 100, 100);
-    this.items.add(box2);
+    const box = new Item(new Vec2(200, 200), new Vec2(100, 100));
+    box.path = new Path2D();
+    box.path.rect(-50, -50, 100, 100);
+    box.collides = true;
+    this.items.add(box);
 
     const text = new Item(new Vec2(0, -110), new Vec2(50, 40));
     //Create custom SVG element for text
@@ -101,7 +96,7 @@ export class CanvasRenderer {
     let end = this.camera.toWorld(this.camera.viewport());
     start = start.sub(start.mod(gridSize));
 
-    this.ctx.strokeStyle = this.palette.gridLine;
+    this.ctx.strokeStyle = "#ccc";
     this.ctx.lineWidth = 1;
 
     this.ctx.beginPath();
@@ -117,7 +112,7 @@ export class CanvasRenderer {
   }
 
   private drawText() {
-    this.ctx.fillStyle = this.palette.gridText;
+    this.ctx.fillStyle = "#000";
     this.ctx.textAlign = "left";
     this.ctx.textBaseline = "top";
     this.ctx.fillText("Hi", 10, 10);

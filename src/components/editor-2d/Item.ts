@@ -1,20 +1,15 @@
 import { Vec2 } from "./Util/Vec2";
+import { Box2 } from "./Util/Box2";
 
-/*
-Item is something drawable in world space, has a position.
+//Item is something drawable in world space, has a position and a bounding box
+//for selection
 
-May belong to an ItemCollection inside a Group, Layer or Scene
-
-May have a bounding box for selection
-// And a keepout box (for collision)?
-
-The item is drawn with pos at the center
-*/
-
-//abstract?
+//Make abstract?
 export class Item {
-  public pos: Vec2;
+  public pos: Vec2; // The item's center
   public bounds: Vec2;
+
+  public collides: boolean = false;
 
   // Path just for outline? Can't have text in path so...
   public path: Path2D | null = null;
@@ -53,5 +48,9 @@ export class Item {
       ctx.fill();
       ctx.stroke();
     }
+  }
+
+  public get box() {
+    return Box2.fromCenterAndSize(this.pos, this.bounds);
   }
 }
