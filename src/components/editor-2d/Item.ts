@@ -7,7 +7,8 @@ import { Box2 } from "./Util/Box2";
 //Make abstract?
 export class Item {
   public pos: Vec2; // The item's center
-  public bounds: Vec2;
+  private boundsUnrotated: Vec2;
+  public rotation = 0; // Rotation in degrees
 
   public collides: boolean = false;
 
@@ -20,16 +21,19 @@ export class Item {
   //Bounds are for selection
   constructor(pos: Vec2, bounds: Vec2) {
     this.pos = pos;
+    this.boundsUnrotated = bounds;
     this.bounds = bounds;
   }
 
   draw(ctx: CanvasRenderingContext2D) {
+    if (this.rotation) ctx.rotate(this.rotation * Math.PI / 180);
+
     if (this.img) {
       // Image
-      const imgPos = this.bounds.div(2).scale(-1);
+      const imgPos = this.boundsUnrotated.div(2).scale(-1);
 
       try {
-        ctx.drawImage(this.img, imgPos.x, imgPos.y, this.bounds.x, this.bounds.y);
+        ctx.drawImage(this.img, imgPos.x, imgPos.y, this.boundsUnrotated.x, this.boundsUnrotated.y);
       } catch (e) {
         console.error("Error drawing image:", e);
       }
@@ -48,6 +52,19 @@ export class Item {
       ctx.fill();
       ctx.stroke();
     }
+
+    if (this.rotation) ctx.rotate(- this.rotation * Math.PI / 180);
+  }
+
+  public set bounds(value: Vec2) {
+    this.boundsUnrotated = value;
+  }
+
+  // Rotate bounds before returning 
+  public get bounds() {
+    const unrotatedBox = Box2.fromCenterAndSize(this.pos, this.boundsUnrotated);
+    const rotatedBox = unrotatedBox.rotate(this.rotation);
+    return rotatedBox.size();
   }
 
   public get box() {

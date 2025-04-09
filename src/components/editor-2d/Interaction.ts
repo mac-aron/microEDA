@@ -9,8 +9,7 @@ export enum InteractionMode {
   MOVE
 };
 
-// Manages user interaction with the canvas through
-// mouse events and button presses
+// Manages user interaction with the canvas through mouse events
 export class Interaction {
   //Cursor/button info - avoid using outside of this class
   public cursor = new Vec2();

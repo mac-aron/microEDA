@@ -81,6 +81,25 @@ export class Box2 {
     );
   }
 
+  public corners(): Vec2[] {
+    return [
+      this.min,
+      new Vec2(this.min.x, this.max.y),
+      this.max,
+      new Vec2(this.max.x, this.min.y)
+    ];
+  }
+
+  //Rotate the 4 corners of the box, and find a new box that contains them
+  //Angle is in degrees
+  public rotate(angle: number): Box2 {
+    const center = this.center();
+    const corners = this.corners().map(c => c.sub(center).rotate(angle).add(center));
+    const min = corners.reduce((a, b) => a.min(b));
+    const max = corners.reduce((a, b) => a.max(b));
+    return new Box2(min, max);
+  }
+
   public toString(): string {
     return `Box2(${this.min.toString()}, ${this.max.toString()})`;
   }

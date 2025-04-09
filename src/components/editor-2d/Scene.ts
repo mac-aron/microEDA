@@ -39,6 +39,13 @@ export class Scene {
     box.collides = true;
     this.items.add(box);
 
+    const box2 = new Item(new Vec2(300, 200), new Vec2(100, 100));
+    box.rotation = 45;
+    box2.path = new Path2D();
+    box2.path.rect(-50, -50, 100, 100);
+    box2.collides = true;
+    this.items.add(box2);
+
     const text = new Item(new Vec2(0, -110), new Vec2(50, 40));
     //Create custom SVG element for text
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -63,6 +70,7 @@ export class Scene {
     img.onload = () => {
       imgItem.img = img;
       imgItem.bounds = new Vec2(img.width, img.height).mm()
+      imgItem.rotation = 15;
       this.items.collection.unshift(imgItem);
     }
   }

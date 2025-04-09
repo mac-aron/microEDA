@@ -74,8 +74,8 @@ export class Vec2 {
   }
 
   public rotate(angle: number): Vec2 {
-    const cos = Math.cos(angle);
-    const sin = Math.sin(angle);
+    const cos = Math.cos(Math.PI * angle / 180);
+    const sin = Math.sin(Math.PI * angle / 180);
     return new Vec2(
       this.x * cos - this.y * sin,
       this.x * sin + this.y * cos
