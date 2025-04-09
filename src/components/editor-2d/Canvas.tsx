@@ -63,7 +63,7 @@ const Canvas: React.FC<CanvasProps> = ({ onUpdate }) => {
       let animationFrameId: number;
 
       const updateCanvas = (time: number) => {
-        onUpdate(canvas, ctx, time); // Call update function
+        onUpdate(canvas!, ctx, time); // Call update function
         animationFrameId = requestAnimationFrame(updateCanvas); // Request next frame
       };
 

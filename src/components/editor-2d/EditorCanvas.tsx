@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Button, Box } from "@mui/material";
 import Canvas from "./Canvas";
-import CanvasFullscreen from "./CanvasFullscreen";
+// import CanvasFullscreen from "./CanvasFullscreen";
 import { CanvasRenderer } from "./CanvasRenderer";
 
 function EditorCanvas() {

@@ -38,7 +38,7 @@ export class Selection {
   }
 
   //Find all items in selection box and add them to selectedItems
-  public select() {
+  public selectFromBox() {
     for (const item of this.selectableItems.collection) {
       const itemPos = item.pos.add(this.selectableItems.pos);
       const itemBox = Box2.fromCenterAndSize(itemPos, item.bounds);
@@ -73,5 +73,17 @@ export class Selection {
     }
 
     camera.exitWorldSpace();
+  }
+
+  public selectItemUnderPoint(pos: Vec2) {
+    const itemsUnderPoint = this.selectableItems.itemsUnderPoint(pos);
+    if (itemsUnderPoint.collection.length === 0) return;
+
+    const i = itemsUnderPoint.last();
+    if (i) this.selectedItems.add(i);
+  }
+
+  public isSelectedItemUnderPoint(pos: Vec2): boolean {
+    return this.selectedItems.itemsUnderPoint(pos).collection.length > 0;
   }
 }

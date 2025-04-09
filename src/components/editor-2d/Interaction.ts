@@ -5,7 +5,8 @@ import { Selection } from './Selection';
 
 export enum InteractionMode {
   NONE,
-  SELECT
+  SELECT,
+  MOVE
 };
 
 // Manages user interaction with the canvas through
@@ -27,7 +28,7 @@ export class Interaction {
 
   public mode: InteractionMode = InteractionMode.NONE;
 
-  constructor(private canvas: HTMLCanvasElement, private ctx: CanvasRenderingContext2D, private camera: Camera, private selection: Selection) {
+  constructor(private canvas: HTMLCanvasElement, private camera: Camera, private selection: Selection) {
     // Setup interaction event listeners
     canvas.addEventListener("mouseup", this.handleMouseUp);
     canvas.addEventListener("mousedown", this.handleMouseDown);
@@ -47,20 +48,27 @@ export class Interaction {
     }
   }
 
-
   private handleMouseUp = (event: MouseEvent) => {
     // Determine which button was released
     if (event.button === 0) { // Left button
       this.presses.left = false;
-      if (this.mode == InteractionMode.SELECT) {
-        // Select items within the selection box
-        this.selection.select();
-        // Reset mode
-        this.mode = InteractionMode.NONE;
-      } else {
-        // TODO: Add click item
-        this.selection.deselect();
+
+      switch (this.mode) {
+        case InteractionMode.SELECT:
+          this.selection.selectFromBox();
+          this.mode = InteractionMode.NONE;
+          break;
+
+        case InteractionMode.MOVE:
+          // TODO: Restore previous state if move invalid
+          this.mode = InteractionMode.NONE;
+          break;
+
+        default:
+          this.selection.deselect();
+          this.selection.selectItemUnderPoint(this.camera.toWorld(this.cursor));
       }
+
     } else if (event.button === 2) { // Right button
       this.presses.right = false;
     }
@@ -90,14 +98,24 @@ export class Interaction {
     const rect = this.canvas.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1; //Factor in DPI
 
+    let lastWorldCursor = this.camera.toWorld(this.cursor);
+
     this.cursor = new Vec2(
       (event.clientX - rect.left) * dpr,
       (event.clientY - rect.top) * dpr
     );
 
-    //Selection
-    if (this.presses.left && this.cursor.distance(this.pressStart.left.screen) > 5) {
-      this.mode = InteractionMode.SELECT;
+    if (this.mode == InteractionMode.NONE) {
+      //Left clicked and mouse moved
+      if (this.presses.left && this.cursor.distance(this.pressStart.left.screen) > 5) {
+
+        if (this.selection.isSelectedItemUnderPoint(this.camera.toWorld(this.cursor))) {
+          this.mode = InteractionMode.MOVE;
+          lastWorldCursor = this.camera.toWorld(this.cursor);
+        } else {
+          this.mode = InteractionMode.SELECT;
+        }
+      }
     }
 
     if (this.mode == InteractionMode.SELECT) {
@@ -106,8 +124,14 @@ export class Interaction {
         this.camera.toWorld(this.cursor)
       );
     }
+    if (this.mode == InteractionMode.MOVE) {
+      if (!this.presses.right) { //Quick fix to avoid moving while panning
+        const delta = this.camera.toWorld(this.cursor).sub(lastWorldCursor);
+        this.selection.selectedItems.moveItems(delta);
+      }
+    }
 
-    //Dragging the scene
+    //Panning the scene
     if (this.presses.right) {
       this.camera.pan(
         event.movementX * dpr,

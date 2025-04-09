@@ -30,7 +30,7 @@ export class CanvasRenderer {
    */
   constructor(private canvas: HTMLCanvasElement, private ctx: CanvasRenderingContext2D) {
     this.camera = new Camera(this.canvas, ctx);
-    this.interaction = new Interaction(canvas, ctx, this.camera, this.selection);
+    this.interaction = new Interaction(canvas, this.camera, this.selection);
     console.log(this)
 
 
@@ -47,8 +47,8 @@ export class CanvasRenderer {
     const text = new Item(new Vec2(0, -110), new Vec2(50, 40));
     //Create custom SVG element for text
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("width", text.bounds.x+'mm');
-    svg.setAttribute("height", text.bounds.y+'mm');
+    svg.setAttribute("width", text.bounds.x + 'mm');
+    svg.setAttribute("height", text.bounds.y + 'mm');
     svg.setAttribute("viewBox", "-10 -10 20 20");
     svg.setAttribute("style", "font-size: 20px; fill: #000000;");
     svg.innerHTML = "<text x='-10' y='7'>Hi</text>";
@@ -123,21 +123,21 @@ export class CanvasRenderer {
     this.ctx.fillText("Hi", 10, 10);
   }
 
-  private debugCursor() {
-    this.ctx.globalAlpha = 0.5;
-    this.ctx.fillStyle = "#ff0000"; //Screen space
-    const mousePos = this.interaction.cursor;
-    this.ctx.fillRect(mousePos.x, mousePos.y, 30, 30);
+  // private debugCursor() {
+  //   this.ctx.globalAlpha = 0.5;
+  //   this.ctx.fillStyle = "#ff0000"; //Screen space
+  //   const mousePos = this.interaction.cursor;
+  //   this.ctx.fillRect(mousePos.x, mousePos.y, 30, 30);
 
-    this.camera.enterWorldSpace();
-    const pos = this.camera.toWorld(mousePos);
-    this.ctx.fillStyle = "#0000ff"; //toWorld space
-    this.ctx.fillRect(pos.x, pos.y, 30, 30);
-    const pos2 = this.camera.toScreen(pos);
-    this.camera.exitWorldSpace();
+  //   this.camera.enterWorldSpace();
+  //   const pos = this.camera.toWorld(mousePos);
+  //   this.ctx.fillStyle = "#0000ff"; //toWorld space
+  //   this.ctx.fillRect(pos.x, pos.y, 30, 30);
+  //   const pos2 = this.camera.toScreen(pos);
+  //   this.camera.exitWorldSpace();
 
-    this.ctx.fillStyle = "#00ff00"; //toScreen space
-    this.ctx.fillRect(pos2.x - 30, pos2.y - 30, 30, 30);
-    this.ctx.globalAlpha = 1;
-  }
+  //   this.ctx.fillStyle = "#00ff00"; //toScreen space
+  //   this.ctx.fillRect(pos2.x - 30, pos2.y - 30, 30, 30);
+  //   this.ctx.globalAlpha = 1;
+  // }
 }

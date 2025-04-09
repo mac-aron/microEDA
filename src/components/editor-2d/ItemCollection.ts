@@ -1,6 +1,7 @@
 import { Item } from "./Item";
 import { Camera } from "./Camera";
 import { Vec2 } from "./Util/Vec2";
+import { Box2 } from "./Util/Box2";
 
 // Manages a collection of items, such as drawing them together
 export class ItemCollection {
@@ -32,5 +33,27 @@ export class ItemCollection {
     if (this.collection.includes(item)) return;
 
     this.collection.push(item);
+  }
+
+  public last() {
+    if (this.collection.length === 0) return null;
+    return this.collection[this.collection.length - 1];
+  }
+
+  public itemsUnderPoint(pos: Vec2): ItemCollection {
+    const itemsUnderPoint = new ItemCollection();
+    for (const item of this.collection) {
+      const itemBox = Box2.fromCenterAndSize(item.pos.add(this.pos), item.bounds);
+      if (itemBox.contains(pos)) {
+        itemsUnderPoint.add(item);
+      }
+    }
+    return itemsUnderPoint;
+  }
+
+  public moveItems(offset: Vec2) {
+    for (const item of this.collection) {
+      item.pos = item.pos.add(offset);
+    }
   }
 }
